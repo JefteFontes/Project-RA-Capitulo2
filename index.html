@@ -8,31 +8,15 @@
 
   <style>
     body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: Arial, Helvetica, sans-serif; }
-    .instruction-box {
-      text-align: center;
-      position: fixed;
-      z-index: 9999;
-      background: rgba(255, 255, 255, 0.9);
-      font-size: 1rem;
-      padding: 1rem;
-      width: 90%;
-      max-width: 400px;
-      top: 1rem;
-      left: 50%;
-      transform: translateX(-50%);
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      transition: background-color 0.5s;
-    }
+    .instruction { text-align: center; position: fixed; z-index: 9999; background: white; font-size: 1rem; padding: 1rem; width: 100%; top: 0; left: 50%; transform: translateX(-50%); }
     a { text-decoration: underline; color: #333; }
-    ul { list-style: none; padding: 0; margin: 0; font-size: 0.9rem; }
-    li { display: inline; margin: 0 10px; }
+    
   </style>
 </head>
 
 <body>
-  <div id="instructionUI" class="instruction-box">
-    Aponte sua câmera para o marcador <a href="https://commons.wikimedia.org/wiki/File:Hiro_marker_ARjs.png" target="_blank"><strong>Hiro</strong></a>
+  <div class="instruction">
+    Aponte a câmera para o marcador Hiro
   </div>
 
   <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" gesture-detector>
@@ -46,7 +30,9 @@
           gltf-model="url(gislinge_viking_boat.glb)"
           scale="0.007 0.007 0.007" 
           position="0 0.5 0"
+
           animation__lunge="property: position; from: 0 0.5 0; to: 0 0.6 -0.3; dur: 500; dir: alternate; loop: 1; startEvents: lunge; easing: easeOutQuad"
+
           animation__spin="property: rotation; to: 0 360 0; dur: 4000; autoplay: false; loop: true; easing: linear; resumeEvents: mousedown; pauseEvents: mouseup"
       >
       </a-entity>
@@ -55,38 +41,32 @@
 
   <script>
     const marker = document.querySelector("#hiroMarker");
-    const instructionUI = document.querySelector('#instructionUI');
+    const mensagemHeroUI = document.querySelector('.instruction');
 
-    // Define os textos para cada estado
-    const textMarkerFound = `
-      <ul>
-        <li>👇 <strong>Toque</strong> p/ avançar</li>
-        <li>🖐 <strong>Segure</strong> p/ girar</li>
-        <li>👌 <strong>Pinça</strong> p/ escalar</li>
-      </ul>
-    `;
-    const textMarkerLost = `Aponte sua câmera para o marcador <a href="https://commons.wikimedia.org/wiki/File:Hiro_marker_ARjs.png" target="_blank"><strong>Hiro</strong></a>`;
-
-    // Altera o conteúdo do HTML dinamicamente
     marker.addEventListener("markerFound", () => {
-      instructionUI.innerHTML = textMarkerFound;
+      mensagemHeroUI.style.display = 'none';
+      instrucoesUI.style.display = 'block';
     });
     marker.addEventListener("markerLost", () => {
-      instructionUI.innerHTML = textMarkerLost;
+      mensagemHeroUI.style.display = 'block';
+      instrucoesUI.style.display = 'none';
     });
 
     const barco = document.querySelector("#barcoviking");
 
+    // Lógica para evitar que a animação de avançar dispare durante um gesto
     let isDragging = false;
     barco.addEventListener("gesturestart", () => { isDragging = true; });
     barco.addEventListener("gestureend", () => { isDragging = false; });
 
+    // Função que dispara a animação de avançar
     const dispararAnimacao = () => {
       if (!isDragging) {
         barco.emit("lunge");
       }
     };
     
+    // Adiciona os listeners para o toque rápido
     barco.addEventListener("touchstart", dispararAnimacao);
     barco.addEventListener("click", dispararAnimacao);
   </script>
