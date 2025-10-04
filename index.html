@@ -1,40 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AR Barco Viking</title>
+  <title>AR Barco Viking Interativo</title>
   <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   <script src="https://raw.githack.com/fcor/arjs-gestures/master/dist/gestures.js"></script>
 
   <style>
-    body {
-      margin: 0; padding: 0;
-      width: 100%; height: 100%;
-      overflow: hidden;
-      font-size: 18px;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-    .mensagem-hero {
-      text-align: center;
-      position: fixed;
-      z-index: 9999;
-      background: white;
-      font-size: 1rem;
-      padding: 1rem;
-      width: 100%;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-    a {
-      text-decoration: underline;
-      color: #333;
-    }
-    ul, ul li {
-      font-size: .8rem;
-      list-style: none;
-      margin: 0; padding: 0;
-    }
+    body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: Arial, Helvetica, sans-serif; }
+    .mensagem-hero { text-align: center; position: fixed; z-index: 9999; background: white; font-size: 1rem; padding: 1rem; width: 100%; top: 0; left: 50%; transform: translateX(-50%); }
+    a { text-decoration: underline; color: #333; }
+    .instrucoes { background: rgba(255, 255, 255, .8); position: fixed; bottom: 1rem; left: 1rem; padding: .7rem; border-radius: 1rem; display: none; }
+    ul, ul li { font-size: .8rem; list-style: none; margin: 0; padding: 0; line-height: 1.5; }
   </style>
 </head>
 
@@ -42,6 +19,7 @@
   <div class="mensagem-hero">
     Aponte sua câmera para o marcador <a href="https://commons.wikimedia.org/wiki/File:Hiro_marker_ARjs.png" target="_blank"><strong>Hiro</strong></a>
   </div>
+
   <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" gesture-detector>
     <a-entity camera cursor="rayOrigin: mouse; fuse:false" raycaster="objects: .tocavel"></a-entity>
 
@@ -53,7 +31,10 @@
           gltf-model="url(gislinge_viking_boat.glb)"
           scale="0.007 0.007 0.007" 
           position="0 0.5 0"
-          animation__pulsar="property: scale; from: 0.007 0.007 0.007; to: 0.0075 0.0075 0.0075; dur: 300; dir: alternate; loop: 1; startEvents: pulsar; easing: easeOutQuad"
+
+          animation__lunge="property: position; from: 0 0.5 0; to: 0 0.6 -0.3; dur: 500; dir: alternate; loop: 1; startEvents: lunge; easing: easeOutQuad"
+
+          animation__spin="property: rotation; to: 0 360 0; dur: 4000; autoplay: false; loop: true; easing: linear; resumeEvents: mousedown; pauseEvents: mouseup"
       >
       </a-entity>
     </a-marker>
@@ -61,30 +42,35 @@
 
   <script>
     const marker = document.querySelector("#hiroMarker");
+    const instrucoesUI = document.querySelector('.instrucoes');
+    const mensagemHeroUI = document.querySelector('.mensagem-hero');
+
     marker.addEventListener("markerFound", () => {
-      document.querySelector('.mensagem-hero').style.display = 'none';
-      document.querySelector('.instrucoes').style.display = 'block';
+      mensagemHeroUI.style.display = 'none';
+      instrucoesUI.style.display = 'block';
     });
     marker.addEventListener("markerLost", () => {
-      document.querySelector('.mensagem-hero').style.display = 'block';
-      document.querySelector('.instrucoes').style.display = 'none';
+      mensagemHeroUI.style.display = 'block';
+      instrucoesUI.style.display = 'none';
     });
 
-    const ambar = document.querySelector("#ambar");
+    const barco = document.querySelector("#barcoviking");
 
+    // Lógica para evitar que a animação de avançar dispare durante um gesto
     let isDragging = false;
-    ambar.addEventListener("gesturestart", () => { isDragging = true; });
-    ambar.addEventListener("gestureend", () => { isDragging = false; });
+    barco.addEventListener("gesturestart", () => { isDragging = true; });
+    barco.addEventListener("gestureend", () => { isDragging = false; });
 
+    // Função que dispara a animação de avançar
     const dispararAnimacao = () => {
       if (!isDragging) {
-        ambar.emit("pulsar");
+        barco.emit("lunge");
       }
     };
     
-    // se clicar/toque simples no objeto → pulsar
-    ambar.addEventListener("touchstart", dispararAnimacao);
-    ambar.addEventListener("click", dispararAnimacao);
+    // Adiciona os listeners para o toque rápido
+    barco.addEventListener("touchstart", dispararAnimacao);
+    barco.addEventListener("click", dispararAnimacao);
   </script>
 </body>
 </html>
